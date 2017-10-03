@@ -31,7 +31,7 @@ import os,sys
 ###
 ### Overall parameter control ###
 ###
-OCL = True                              # use nengo_ocl or nengo to simulate
+OCL = False#True                              # use nengo_ocl or nengo to simulate
 if OCL: import nengo_ocl
 errorLearning = True                    # error-based PES learning OR algorithmic
 recurrentLearning = True                # now it's on both, so this is obsolete, leave it True
@@ -198,7 +198,7 @@ else:
 ###
 if errorLearning:                                       # PES plasticity on
     Tmax = 10.                                       # second - how long to run the simulation
-    continueTmax = 20000.                               # if continueLearning, then start with weights from continueTmax
+    continueTmax = 10.                               # if continueLearning or testLearned, then start with weights from continueTmax
     reprRadius = 1.0                                    # neurons represent (-reprRadius,+reprRadius)
     reprRadiusIn = 0.2                                  # input is integrated in ratorOut, so keep it smaller than reprRadius
     if recurrentLearning:                               # L2 recurrent learning
@@ -389,7 +389,7 @@ else:
 #inhVSG_weightsDecayRate = 0.               # no decay of inh VSG plastic weights
 
 #pathprefix = '/lcncluster/gilra/tmp/'
-pathprefix = '../data/'
+pathprefix = 'data/'
 inputStr = ('_trials' if trialClamp else '') + \
         ('_seed'+str(seedRin)+'by'+str(inputreduction)+inputType if inputType != 'rampLeave' else '')
 baseFileName = pathprefix+'ff_rec'+('_ocl' if OCL else '')+'_Nexc'+str(Nexc) + \

@@ -13,9 +13,9 @@ FOLLOW learning requires the use of heterogeneous spiking LIF neurons with pre-l
 You can install Nengo by:  
 `pip install nengo`  
   
-Currently, the scripts are configure to use Nengo's default CPU backend. This is slow!  
+Currently, the scripts are configured to use Nengo's default CPU backend. This is slow! I **strongly** recommend to use the GPU backend which is about 25 times faster!   
   
-For speed, I use the GPU back-end of the Nengo simulator [nengo_ocl](https://github.com/nengo/nengo_ocl). For the FOLLOW simulations, I found the GPU backend to be 20 times faster than the CPU backend. For good learning, I required about 10,000s of training the network which even on the GPU backend took about 24 hours for the van der Pol oscillator example (3000 feedforward and 3000 recurrently connected neurons). Thus, I strongly recommend using the GPU backend, but this might require a dedicated graphics card on a server -- on a laptop like mine, the GPU doesn't have enough memory.  
+For speed, I use the GPU back-end of the Nengo simulator [nengo_ocl](https://github.com/nengo/nengo_ocl). For the FOLLOW simulations, I found the GPU backend to be **~25 times faster** than the CPU backend. For good learning, I required about 10,000s of training the network which even on the GPU backend took about 24 hours for the van der Pol oscillator example (3000 feedforward and 3000 recurrently connected neurons). Thus, I strongly recommend using the GPU backend, but this might require a dedicated graphics card on a server -- on a laptop like mine, the GPU doesn't have enough memory.  
 In the main python scripts used below, you'll have to set the parameter OCL to True to use the OpenCL (OCL) based GPU backend of Nengo:  
 `OCL = True#False                             # use nengo_ocl or nengo to simulate`  
 You need to install OpenCL libraries for the GPU you have (NVidia/AMD), and then pyopencl (see [nengo_ocl page](https://github.com/nengo/nengo_ocl) for details about all these), and finally nengo_ocl:
@@ -53,21 +53,58 @@ but in v2.5.0, and perhaps in future versions too, the gain $\nu_i$ multiplies a
 
 ## Running simulations  
   
-Here, I only document how to run the most basic simulations for the van der Pol (Fig. 2-figure supplement 2 - panels Ai, Bi, Ci) and the arm (Fig. 4 - panels Ai, Bi, Ci) examples. Simulations for other figures in the paper require various settings, and different learning and test runs.
+Here, I only document how to run the most basic simulations for the van der Pol (Figure 2's higher firing rate version i.e. Fig. 2-figure supplement 1 - panels Ai, Bi, Ci) and the arm (Fig. 4 - panels Ai, Bi, Ci) examples. Simulations for other figures in the paper require various settings, and different learning and test runs.
   
-### Learning the van der Pol oscillator model:  
-Currently only 40 s of simulation is set in the script `input_ff_rec_transform_nengo_ocl.py`. Even this takes about 3 hours on an i7 CPU on my laptop, but around 3 minutes on an NVidia Titan X GPU using nengo_ocl.   
-Modify simulation time by changing Tmax parameter to 10000 (seconds) to get data for Figure 2-figure supplement 2 panels Ai, Bi, Ci. For first 4 s (Tperiod = 4 s), feedback is off, then feedback and learning are turned on. For the last 16 s (4*Tperiod), feedback and learning are turned off for testing after learning. I use `nohup` to run the process in the background, so that it stays running even if I log out of the server.  
+### Learning a forward model of the van der Pol oscillator:  
+Currently only 40 s of simulation is set in the script `input_ff_rec_transform_nengo_ocl.py`. Even this takes about 3 hours on an i7 CPU on my laptop, but around 3 minutes on an NVidia Titan X GPU using nengo_ocl. So use nengo_ocl and set `OCL = True`, or try with less number of neurons `Nexc`, currently 3000 feedforward and 3000 recurrently connected neurons (but the approximation of the system will be poor with lesser number of neurons).   
+Modify simulation time by changing Tmax parameter to 10000 (seconds) to get data for Figure 2-figure supplement 1 panels Ai, Bi, Ci. For first 4 s (Tperiod = 4 s), feedback is off, then feedback and learning are turned on. For the last 16 s (4*Tperiod), feedback and learning are turned off for testing after learning. I use `nohup` to run the process in the background, so that it stays running even if I log out of the server. Use `cat nohup0.out` or `less nohup0.out` to check how long the simulation has run (takes some time to set up first before, it shows the progress bar of the simulation).  
 `nohup python input_ff_rec_transform_nengo_ocl.py &> nohup0.out &`
-The script will pop up plots for ... 
-The script save files ... To later display the data saved, run:  
-`python `  
-Testing on a different input requires further change of parameters to load the weights of the learned network, and run with a different input protocol. In particular after the above learning with say 40 s, you need to change these parameters and re-run the above simulation for 40 s.  
   
-### Learning the arm model:  
+The script will pop up plots for the command input $u$, error $\epsilon$, network predicted state $\hat{x}$, reference state $x$ and squared error, all as a function of time.  
+The script will also save the data into 4 files with one of 4 suffixes as below (note if not using GPU, _ocl will not be present in the name):  
+"data/ff_ocl_Nexc3000_seeds2344_weightErrorCutoff0.0_nodeerr_learn_rec_nocopycat_func_vanderPol_trials_seed2by50.0amplVaryHeightsScaled_40.0s_<start|end|currentweights|endweights>.shelve"
+...start and ...end save the first 5 Tperiods and last 5 Tperiods of the simulation respectively, ...currentweights saves feedforward and recurrent weights at 20 time-points during the simulation, ...endweights saves the feedforward and recurrent weights at the end of simulation (learned weights).  
+To later display the saved data, run:  
+`python input_rec_transform_nengo_plot.py data/ff_ocl_Nexc3000_seeds2344_weightErrorCutoff0.0_nodeerr_learn_rec_nocopycat_func_vanderPol_trials_seed2by50.0amplVaryHeightsScaled_40.0s`
+  
+Testing on structured input as in panels Fig. 2-figure supplement 1 Aii, Bii - requires further change of parameters to load the weights of the learned network, and run with a different input protocol. In particular after the above learning, you need to change parameters as below and re-run the above simulation for a test duration. Set continueTmax for however long you ran the above learning simulation, here 40 s as above. Then set Tmax to how long you want to test, typically just 40 s.  
+```testLearned = True#False                     # whether to test the learning, uses weights from continueLearning, but doesn't save again.
+seedRin = 3#2
+inputType = 'rampLeaveRampHeights'
+#inputType = 'amplVaryHeightsScaled'
+Tmax = 40.                                       # second
+continueTmax = 40.                               # if continueLearning or testLearned,
+                                                    #  then start with weights from continueTmax
+                                                    #  and run the learning/testing for Tmax
+```  
+Again, run the simulation  
+`nohup python input_ff_rec_transform_nengo_ocl.py &> nohup0.out &`
+The script generates plots for test input, and data files of the name prefix as below (note if not using GPU, _ocl will not be present in the name), which you can then plot as above.  
+"data/ff_ocl_Nexc3000_seeds2344_weightErrorCutoff0.0_nodeerr_learn_rec_nocopycat_func_vanderPol_trials_seed2by50.0amplVaryHeightsScaled**_testFrom40.0_seed3by50.0rampLeaveRampHeights_40.0s**"
+    
+Of course you need at least 1000 s of learning to see some resemblance to the reference in the test, and 5000 to 10000 s to see good learning. To make learning faster, after 500 s, you can also set the learning rate to 20 times more than current 2e-3 i.e. to 4e-2 and then run just for 500 s more by setting `continueLearning = True`, `continueTmax = 500`, `Tmax=500`, and `seedRin = 3`.  
+  
+### Learning a forward model of the arm:  
+The sequence of simulations for learning and testing, and the parameter names and data filenames for the arm learning (5000 feedforward and 5000 recurrent neurons) are very similar to the above van der Pol example. However, the simulation script is different, though the plotting script is the same.
 Currently only 10 s of simulation is set in the script `input_ff_rec_transform_nengo_ocl.py`. Modify it by changing Tmax parameter to 15000 (seconds) to get data for Figure 4 Ai, Bi, Ci. For first 1 s (Tperiod), feedback is off, then feedback and learning are turned on. For the last 4 s (4*Tperiod), feedback and learning are turned off for testing after learning.  I use `nohup` to run the process in the background, so that it stays running even if I log out of the server.  
-`nohup python input_ff_rec_robot_nengo_directu_ocl.py &> nohup.out &`
+`nohup python input_ff_rec_robot_nengo_directu_ocl.py &> nohup1.out &`
   
-The script imports sim_robot.py and arm*.py for simulating the 'true' arm dynamics. The script saves in separate files: the variables monitored during learning and the final weights.
-
-### For other figures, we ran simulations with various different settings of parameters, and collated a number of data files to plot any given figure using the script `input_rec_transform_nengo_plot_figs.py`.  
+The script imports sim_robot.py and arm*.py for simulating the 'true' arm dynamics. The file saves data with name as below (note if not using GPU, _ocl will not be present in the name), here there is no ...currentweights file as it would be huge.  
+"data/ff_rec_ocl_Nexc5000_norefinptau_directu_seeds2345_weightErrorCutoff0.0_nodeerr_learn_rec_nocopycat_func_robot2_todorov_gravity_seed2by0.3amplVaryHeights_10.0s_<start|end|endweights>.shelve"
+  
+Testing proceeds as for the van der Pol oscillator example. Change parameters as below, and rerun the simulation command as above, to get test plots and data files, set continueTmax to however long you ran the learning.
+```testLearned = True#False                     # whether to test the learning, uses weights from continueLearning, but doesn't save again.
+seedRin = 3#2
+Tmax = 10.                                       # second - how long to run the simulation
+continueTmax = 10.                               # if continueLearning or testLearned, then start with weights from continueTmax
+```
+This will test on random input as during training. To test on the acrobot swinging, first run `python RL_acrobot.py`, then modify parameters (apart from the above one for testing) in the simulation script file:
+```#inputType = 'amplVaryHeights'
+inputType = 'RLSwing'```
+Once this completes, it'll generate a file name "arm_2link_swing_data.pickle" that contains the command input that makes the reference arm swing to reach a target (uses reinforcement learning to figure out command input). To re-run the animation for this arm data, just set `loadOld = True` and `#loadOld = False` (comment out), and re-run `python RL_acrobot.py`.  
+Then run the simulation script for 10 s as above to generate the test data plots and files.
+  
+### Other figures  
+I ran simulations with various different settings of parameters, and collated a number of data files to plot any given figure using the script `input_rec_transform_nengo_plot_figs.py`. You could take a look at the names of the data files being plotted in that script and that gives a clue to what parameters to change in the above simulation script files. If that doesn't help contact me!  
+  
+Bon FOLLOW-ing!!!

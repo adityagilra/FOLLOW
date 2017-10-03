@@ -200,7 +200,7 @@ dt = 0.001                                              # second
 ###
 if errorLearning:                                       # PES plasticity on
     Tmax = 40.                                       # second
-    continueTmax = 10000.                               # if continueLearning or testLearned,
+    continueTmax = 40.                               # if continueLearning or testLearned,
                                                         #  then start with weights from continueTmax
                                                         #  and run the learning/testing for Tmax
     reprRadius = 1.                                     # neurons represent (-reprRadius,+reprRadius)

@@ -24,8 +24,8 @@ bot = 'arm_2link'
 #task = 'reach1'
 #task = 'reach2'
 #task = 'reach3'
-#task = 'swing'
-task = 'swing2'
+task = 'swing'
+#task = 'swing2'
 
 #np.random.seed(1)
 np.random.seed(2)                                           # seed 2 for reach1

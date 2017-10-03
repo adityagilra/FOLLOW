@@ -12,9 +12,7 @@ import os.path
 #import pickle
 import shelve, contextlib
 
-#datapath = '/lcncluster/gilra/tmp/iccluster/'
-#datapath = '../data/'
-datapath = '../data_draft4/'
+datapath = 'data'
 
 # set seed for selecting random weight indices
 np.random.seed([1])

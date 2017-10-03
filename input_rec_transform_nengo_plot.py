@@ -106,7 +106,7 @@ def plot_data(dataFileName,endTag):
         else: N = 2
 
         print('plotting data')
-        plt.figure(facecolor='w',figsize=(8*2, 6*2))            # default figsize=(8,6)
+        plt.figure(facecolor='w',figsize=(8, 6*2))            # default figsize=(8,6)
 
         ### Plot Nengo network
         #EtoIdecvec = sim.data[EtoIdec]
@@ -124,10 +124,12 @@ def plot_data(dataFileName,endTag):
         #yinh2 = data_dict['inhibrator2']
         rateEvolve = data_dict['rateEvolve']
 
-        ax = plt.subplot(2,2,1)
-        ax2 = plt.subplot(2,2,3)
-        ax3 = plt.subplot(2,2,2)
-        ax4 = plt.subplot(2,2,4)
+        ax = plt.subplot(2,1,1)
+        ax2 = plt.subplot(2,1,2)
+        #ax = plt.subplot(2,2,1)
+        #ax2 = plt.subplot(2,2,3)
+        #ax3 = plt.subplot(2,2,2)
+        #ax4 = plt.subplot(2,2,4)
         #cnames = mpl.colors.cnames.values()                    # very similar colors grouped together
         cnames = ['r','g','b','c','m','y','k','olive','chocolate','lawngreen']
         if errorLearning:
@@ -140,26 +142,26 @@ def plot_data(dataFileName,endTag):
         #plt.plot(trange, [inpfn(t) for t in trange], color='m', linewidth=1, label='u')
         if 'ratorOut' in data_dict:
             y = data_dict['ratorOut']
-            ax.plot(trange, y, color='b', linewidth=1, label='L1')
+            ax.plot(trange, y, color='b', linewidth=1, label='input $u$')
         if 'torqueOut' in data_dict:
             ax.plot(trange, data_dict['torqueOut'], color='r', linewidth=1, label='T1')
         if 'inverse' in dataFileName:
             ax.plot(trange, y2, color='r', linewidth=1, label='T1')
         if N>4: [ax2.plot(trange, y2[:,i], color=cnames[i], linewidth=1, label='L2') for i in range(N)]
-        else: ax2.plot(trange, y2[:,:N], color='b', linewidth=1, label='L2')
+        else: ax2.plot(trange, y2[:,:N], color='b', linewidth=1, label='pred $\hat{x}$')
         if 'robot' in dataFileName:
             pass
             #ax.plot(trange, y2[:,N:], color='b', linewidth=1, label='L2')
         if errorLearning:
             if recurrentLearning and copycatLayer:
                 yExpect = data_dict['yExpectRatorOut']
-                ax2.plot(trange, yExpect[-tidx:], color='c', linewidth = 1, label='ref')
+                ax2.plot(trange, yExpect[-tidx:], color='c', linewidth = 1, label='ref $x$')
             #elif '_func' in dataFileName:
             #    yref = lambda x: (2*x[0]**2.,-10*x[0]**3+2*x[1])
             #    plt.plot(trange, np.array([yref(yval) for yval in y]), color='c', linewidth = 1, label='ref')
             else:
                 if N>4: [ax2.plot(trange, rateEvolve[-tidx:,i], color=cnames[i], linewidth = 1, label='ref') for i in range(N)]
-                else: ax2.plot(trange, rateEvolve[-tidx:], color='c', linewidth = 1, label='ref')
+                else: ax2.plot(trange, rateEvolve[-tidx:], color='c', linewidth = 1, label='ref $x$')
             # all of the error is saved in _end.shelve, but we take only the end part here.
             if 'US2014' in dataFileName:
                 ax.plot(trange, y2[:,:N]-rateEvolve[-tidx:], color='g', linewidth=1, label='err')
@@ -167,7 +169,7 @@ def plot_data(dataFileName,endTag):
                 ax4.plot(trange, err[-len(trange):,3:6], linewidth=1, label='err')
                 #ax3.plot(trange, err[-len(trange):], color='g', linewidth=1, label='err')
             else:
-                ax.plot(trange, err[-len(trange):], color='g', linewidth=1, label='err')
+                ax.plot(trange, err[-len(trange):], color='g', linewidth=1, label='err $\epsilon$')
             #errMean = sim.data[errorMean_p]
             #plt.plot(trange, errMean, color='y', linewidth=1, label='errorM')
         else:
@@ -652,50 +654,51 @@ def plot_error_fulltime(dataFileName):
         fig = plt.figure(facecolor='w')
         ax = plt.subplot(111)
         ax.plot(trange, np.linalg.norm(err,axis=1), linewidth=plot_linewidth)
+        axes_labels(ax,'time (s)','error$^2$',xpad=-6,ypad=-7)
 
-        fig = plt.figure(facecolor='w')
-        ax = plt.subplot(111)
-        # mean error (not mean squared error as below)
-        points_per_bin = int(NperiodsAverage*Tperiod/dt)
-        if 'Lorenz' in dataFileName: N = 3
-        elif 'learnu' in dataFileName: N = 2
-        elif 'inverse' in dataFileName: N = 2
-        elif 'robot2' in dataFileName: N = 4
-        elif 'robot2XY' in dataFileName: N = 6
-        elif 'robot1XY' in dataFileName: N = 3
-        else: N = 2
-        for i in range(N):
-            err_mean = err[:,i].reshape((-1,points_per_bin)).mean(axis=1)
-            ax.plot(trange[::points_per_bin], err_mean,\
-                                            color=['r','g','b','k','c','m','y'][i],linewidth=plot_linewidth)
-            #ax.set_ylim(2*min(err_mean[-10:]),2*max(err_mean[-10:]))
-        # mean squared error
-        ax2 = plt.twinx()
-        points_per_bin = int(Tperiod/dt)
-        ax2.plot(trange[::points_per_bin], np.sum(err**2,axis=1).reshape((-1,points_per_bin)).mean(axis=1),\
-                                            color='k', linewidth=plot_linewidth)
-        ax2.set_yscale('log')
-        
-        axes_labels(ax,'time (s)','error mean ('+str(NperiodsAverage)+'*Tperiod)',xpad=-6,ypad=-7)
-        axes_labels(ax2,'time (s)','error$^2$',xpad=-6,ypad=3)
+        #fig = plt.figure(facecolor='w')
+        #ax = plt.subplot(111)
+        ## mean error (not mean squared error as below)
+        #points_per_bin = int(NperiodsAverage*Tperiod/dt)
+        #if 'Lorenz' in dataFileName: N = 3
+        #elif 'learnu' in dataFileName: N = 2
+        #elif 'inverse' in dataFileName: N = 2
+        #elif 'robot2' in dataFileName: N = 4
+        #elif 'robot2XY' in dataFileName: N = 6
+        #elif 'robot1XY' in dataFileName: N = 3
+        #else: N = 2
+        #for i in range(N):
+        #    err_mean = err[:,i].reshape((-1,points_per_bin)).mean(axis=1)
+        #    ax.plot(trange[::points_per_bin], err_mean,\
+        #                                    color=['r','g','b','k','c','m','y'][i],linewidth=plot_linewidth)
+        #    ax.set_ylim(2*min(err_mean[-10:]),2*max(err_mean[-10:]))
+        ## mean squared error
+        #ax2 = plt.twinx()
+        #points_per_bin = int(Tperiod/dt)
+        #ax2.plot(trange[::points_per_bin], np.sum(err**2,axis=1).reshape((-1,points_per_bin)).mean(axis=1),\
+        #                                    color='k', linewidth=plot_linewidth)
+        #ax2.set_yscale('log')
+        #
+        #axes_labels(ax,'time (s)','error mean ('+str(NperiodsAverage)+'*Tperiod)',xpad=-6,ypad=-7)
+        #axes_labels(ax2,'time (s)','error$^2$',xpad=-6,ypad=3)
 
-        fig = plt.figure(facecolor='w')
-        ax = plt.subplot(111)
-        for i in range(N):
-            miderr = len(err)//2                    # python3 doesn't do integer division by default, use //
-            erri = err[miderr:,i]
-            err_reshape = erri.reshape((-1,points_per_bin))
-            err_mean = err_reshape.mean(axis=0)
-            err_std = err_reshape.std(axis=0)
-            ax.plot(trange[:points_per_bin], err_mean,\
-                        color=['r','g','b','k','c','m','y'][i],linewidth=plot_linewidth)
-            ax.plot(trange[:points_per_bin], err_mean+err_std,\
-                        color=['r','g','b','k','c','m','y'][i],alpha=0.5,linewidth=plot_linewidth)
-            ax.plot(trange[:points_per_bin], err_mean-err_std,\
-                        color=['r','g','b','k','c','m','y'][i],alpha=0.5,linewidth=plot_linewidth)
-            print("Mean noise in dimension",i,"per time point in 2nd half of the sim is",erri.mean())
-        axes_labels(ax,'time (s)','error',xpad=-6,ypad=-7)
-        ax.set_title('error Tperiod histogram (end half sim)')
+        #fig = plt.figure(facecolor='w')
+        #ax = plt.subplot(111)
+        #for i in range(N):
+        #    miderr = len(err)//2                    # python3 doesn't do integer division by default, use //
+        #    erri = err[miderr:,i]
+        #    err_reshape = erri.reshape((-1,points_per_bin))
+        #    err_mean = err_reshape.mean(axis=0)
+        #    err_std = err_reshape.std(axis=0)
+        #    ax.plot(trange[:points_per_bin], err_mean,\
+        #                color=['r','g','b','k','c','m','y'][i],linewidth=plot_linewidth)
+        #    ax.plot(trange[:points_per_bin], err_mean+err_std,\
+        #                color=['r','g','b','k','c','m','y'][i],alpha=0.5,linewidth=plot_linewidth)
+        #    ax.plot(trange[:points_per_bin], err_mean-err_std,\
+        #                color=['r','g','b','k','c','m','y'][i],alpha=0.5,linewidth=plot_linewidth)
+        #    print("Mean noise in dimension",i,"per time point in 2nd half of the sim is",erri.mean())
+        #axes_labels(ax,'time (s)','error',xpad=-6,ypad=-7)
+        #ax.set_title('error Tperiod histogram (end half sim)')
 
 def plot_biases4nonfiringneurons(testFileName):
     # with ensures that the file is closed at the end / if error
