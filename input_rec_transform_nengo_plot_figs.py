@@ -12,7 +12,9 @@ import os.path
 #import pickle
 import shelve, contextlib
 
-datapath = 'data'
+datapath = '../lcncluster/paper_data_final/'
+#datapath = '../data/'
+#datapath = '../data_draft4/'
 
 # set seed for selecting random weight indices
 np.random.seed([1])
@@ -163,7 +165,7 @@ def plot_error_fulltime(ax,dataFileName,startT=0.,color='k'):
             for addT in np.arange(fileTstep,addTime-1,fileTstep):
                 intermediateFileName = breakFile[0]+'continueFrom'+str(addT)+\
                             '_'+breakFileSeed[0]+'seed'+str(seedIn)+'by'+breakFileby[1]
-                print intermediateFileName
+                print(intermediateFileName)
                 if os.path.exists(datapath+intermediateFileName+'_end.shelve'):
                     dataFileNames.append((intermediateFileName,addT))
                 seedIn += 1
@@ -1226,28 +1228,34 @@ def plot_fig5():
     model = nengo.Network()
     with model:
         nrngain = 2
-        #rator = nengo.Ensemble(25, bias=nengo.dists.Uniform(1-nrngain,1+nrngain),
-        #                        gain=np.ones(25)*nrngain, dimensions=1, seed=2)
-        rator = nengo.Ensemble(25, bias=nengo.dists.Uniform(-nrngain,+nrngain),
-                                gain=np.ones(25)*nrngain, dimensions=1, seed=2)
-        rator2 = nengo.Ensemble(25, max_rates=nengo.dists.Uniform(200, 400), dimensions=1)
+        N = 25
+        #rator = nengo.Ensemble(N, bias=nengo.dists.Uniform(1-nrngain,1+nrngain),
+        #                        gain=np.ones(N)*nrngain, dimensions=1, seed=2)
+        rator = nengo.Ensemble(N, bias=nengo.dists.Uniform(-nrngain,+nrngain),
+                                gain=np.ones(N)*nrngain, dimensions=1, seed=6)
+        rator2 = nengo.Ensemble(N, max_rates=nengo.dists.Uniform(200, 400), dimensions=1, seed=4)
     sim = nengo.Simulator(model)
     # note: response_curves() all have positive slopes! they are responses to 1D projected input = \sum_\alpha e_{i\alpha}u_\alpha
     #  but tuning curves() are responses to multi-dimensional input, here just 1D input = u, but this cannot be equated to projected input,
-    #  as tuning curves() are have negative slopes (note: gain is always positive, it is the encoders that determine slope!)
-    eval_points, activities = tuning_curves(rator, sim, inputs=np.asarray([np.linspace(-1,1,10000)]).T)
-    eval_points2, activities2 = tuning_curves(rator2, sim, inputs=np.asarray([np.linspace(-1,1,10000)]).T)
+    #  as tuning curves() have negative slopes (note: gain is always positive, it is the encoders that determine slope!)
+    #eval_points, activities = tuning_curves(rator, sim, inputs=np.asarray([np.linspace(-1,1,10000)]).T)
+    #eval_points2, activities2 = tuning_curves(rator2, sim, inputs=np.asarray([np.linspace(-1,1,10000)]).T)
+    eval_points, activities = response_curves(rator, sim, inputs=np.linspace(-1,1,10000))
+    eval_points2, activities2 = response_curves(rator2, sim, inputs=np.linspace(-1,1,10000))
     
     fig = plt.figure(facecolor='w',figsize=(columnwidth, columnwidth/2.),dpi=fig_dpi)
     ax = plt.subplot(1,2,1)
     ax.plot(eval_points, activities)
     beautify_plot(ax,x0min=False,y0min=False)
-    axes_labels(ax,'Input $u$','Firing rate (Hz)',xpad=-3,ypad=-3)
+    axes_labels(ax,'','Firing rate (Hz)',xpad=-3,ypad=-3)
     ax2 = plt.subplot(1,2,2)
     ax2.plot(eval_points2, activities2)
     beautify_plot(ax2,x0min=False,y0min=False)
-    axes_labels(ax2,'Input $u$','',xpad=-3,ypad=-3)
-    fig.tight_layout()
+    axes_labels(ax2,'Input $\\tilde{J}_i$','')
+    ax2.xaxis.set_label_coords(0.55, 0.1, transform=fig.transFigure)
+    #fig.tight_layout()
+    fig.subplots_adjust(left=0.15, bottom=0.2, right=0.95, top=0.9,
+                wspace=0.4, hspace=0.)
     ax.text(0.02, 0.9, 'A', transform=fig.transFigure)
     ax2.text(0.5, 0.9, 'B', transform=fig.transFigure)
     fig.savefig('figures/fig_tuning_curves_v2.pdf',dpi=fig_dpi)
