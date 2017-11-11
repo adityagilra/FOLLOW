@@ -13,7 +13,7 @@ FOLLOW learning requires the use of heterogeneous spiking LIF neurons with pre-l
 You can install Nengo by:  
 `pip install nengo`  
   
-(The simulations in the paper used Nengo v2.4.0, but they also work with v2.5.0, but you'll need to set lower learning rate -- see the aside below.)
+(For the simulations in the paper, I used Nengo v2.4.0, but the code will also work with v2.5.0, but you'll need to set lower learning rate eta -- see the aside below.)
   
 Currently, the scripts are configured to use Nengo's default CPU backend. This is slow! I **strongly** recommend to use the GPU backend which is about 25 times faster!   
   
@@ -50,6 +50,8 @@ $J_i = \sum_l w^{\textnormal{ff}}_{il} (S^{\textnormal{ff}}_l*\kappa)(t) +
         \nu_i \sum_\alpha k e_{i\alpha} (\epsilon_\alpha*\kappa)(t)
          + b_i,$  
 but in v2.5.0, and perhaps in future versions too, the gain $\nu_i$ multiplies all the three terms (not bias of course). After learning, this results in some neurons firing at very high instantaneous rates, thus the mean firing rates of neurons using Nengo v2.5.0 is higher than when using v2.4.0, with all other parameters constant.
+  
+You can even just use constant gain as I did for Figure 2 in the paper, to obtain lower variability in rates.
   
 -----
 
