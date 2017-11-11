@@ -13,6 +13,8 @@ FOLLOW learning requires the use of heterogeneous spiking LIF neurons with pre-l
 You can install Nengo by:  
 `pip install nengo`  
   
+(The simulations in the paper used Nengo v2.4.0, but they also work with v2.5.0, but you'll need to set lower learning rate -- see the aside below.)
+  
 Currently, the scripts are configured to use Nengo's default CPU backend. This is slow! I **strongly** recommend to use the GPU backend which is about 25 times faster!   
   
 For speed, I use the GPU back-end of the Nengo simulator [nengo_ocl](https://github.com/nengo/nengo_ocl). For the FOLLOW simulations, I found the GPU backend to be **~25 times faster** than the CPU backend. For good learning, I required about 10,000s of training the network which even on the GPU backend took about 24 hours for the van der Pol oscillator example (3000 feedforward and 3000 recurrently connected neurons). Thus, I strongly recommend using the GPU backend, but this might require a dedicated graphics card on a server -- on a laptop like mine, the GPU doesn't have enough memory.  
@@ -36,7 +38,7 @@ But latest nengo_ocl does not work with nengo v2.4.0, so you need an older versi
 `git checkout 6d275686b1e771975fe7d6ddd44ae4b778ce0ce6`  
 Be sure to set the PYTHONPATH to include above nengo_ocl directory after this.
   
-All the code also runs with the newer version 2.5.0 of Nengo, but from version 2.5.0 onwards, there will be a huge variability in instantaneous rates of firing, because the way the neural gains are implemented has changed. See the details here:  
+All the code also runs with the newer version 2.5.0 of Nengo, but from version 2.5.0 onwards, the learning rate used currently will be too high for v2.5.0 leading to large oscillations in output from the start. Set eta=1e-4 instead of 2e-3. Further, there will be a huge variability in instantaneous rates of firing, because the way the neural gains are implemented has changed. See the details here:  
 [https://github.com/nengo/nengo/pull/1330](https://github.com/nengo/nengo/pull/1330)  
 Drasmuss says: """nengo.Connection(x, ens.neurons) was applying the neural gains before the synapse (synapse(x*gains)), whereas nengo.Connection(x, ens) was applying the gains after the synapse (synapse(x)*gains). This changes it so that the implementation is consistent in both cases (I went with the latter formulation)."""
 Drasmuss also mentions another change (point 2), but in the discussion below, he says he reverted it back.
