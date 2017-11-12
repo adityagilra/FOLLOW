@@ -38,7 +38,7 @@ But latest nengo_ocl does not work with nengo v2.4.0, so you need an older versi
 `git checkout 6d275686b1e771975fe7d6ddd44ae4b778ce0ce6`  
 Be sure to set the PYTHONPATH to include above nengo_ocl directory after this.
   
-All the code also runs with the newer version 2.5.0 of Nengo, but from version 2.5.0 onwards, the learning rate used currently will be too high for v2.5.0 leading to large oscillations in output from the start. Set eta=1e-4 instead of 2e-3. Further, there will be a huge variability in instantaneous rates of firing, because the way the neural gains are implemented has changed. See the details here:  
+All the code also runs with the newer version 2.5.0 of Nengo, but from version 2.5.0 onwards, the learning rate used currently will be too high for v2.5.0 leading to large oscillations in output from the start. Set eta=1e-4 instead of 2e-3. Further, there will be a huge variability in instantaneous rates of firing. These two differences arise because the way the neural gains are implemented has changed. See the details here:  
 [https://github.com/nengo/nengo/pull/1330](https://github.com/nengo/nengo/pull/1330)  
 Drasmuss says: """nengo.Connection(x, ens.neurons) was applying the neural gains before the synapse (synapse(x*gains)), whereas nengo.Connection(x, ens) was applying the gains after the synapse (synapse(x)*gains). This changes it so that the implementation is consistent in both cases (I went with the latter formulation)."""
 Drasmuss also mentions another change (point 2), but in the discussion below, he says he reverted it back.
@@ -49,7 +49,7 @@ $J_i = \sum_l w^{\textnormal{ff}}_{il} (S^{\textnormal{ff}}_l*\kappa)(t) +
         \sum_j w_{ij} (S_j*\kappa)(t) +
         \nu_i \sum_\alpha k e_{i\alpha} (\epsilon_\alpha*\kappa)(t)
          + b_i,$  
-but in v2.5.0, and perhaps in future versions too, the gain $\nu_i$ multiplies all the three terms (not bias of course). After learning, this results in some neurons firing at very high instantaneous rates, thus the mean firing rates of neurons using Nengo v2.5.0 is higher than when using v2.4.0, with all other parameters constant.
+but in v2.5.0, and perhaps in future versions too, the gain $\nu_i$ multiplies all the three terms (not bias of course). During learning, since the gain multiplies the weights too, in the later version, the effective learning rate becomes different and needs to be adjusted between the two versions. After learning, this results in some neurons firing at very high instantaneous rates in the later version, thus the mean firing rates of neurons using Nengo v2.5.0 is higher than when using v2.4.0, with all other parameters constant.
   
 You can even just use constant gain as I did for Figure 2 in the paper, to obtain lower variability in rates.
   
