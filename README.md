@@ -30,7 +30,7 @@ For the [paper](https://arxiv.org/abs/1702.06463), I have used Nengo version 2.4
   
 To install the old version of Nengo:  
 `pip uninstall nengo`  
-`pip install nengo=2.4.0`  
+`pip install nengo==2.4.0`  
 But latest nengo_ocl does not work with nengo v2.4.0, so you need an older version of that too:  
 `git uninstall nengo_ocl`  
 `git clone https://github.com/nengo/nengo_ocl.git`  
