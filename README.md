@@ -32,7 +32,7 @@ To install the old version of Nengo:
 `pip uninstall nengo`  
 `pip install nengo==2.4.0`  
 But latest nengo_ocl does not work with nengo v2.4.0, so you need an older version of that too:  
-`git uninstall nengo_ocl`  
+`pip uninstall nengo_ocl`  
 `git clone https://github.com/nengo/nengo_ocl.git`  
 `cd nengo_ocl`  
 `git checkout 6d275686b1e771975fe7d6ddd44ae4b778ce0ce6`  
