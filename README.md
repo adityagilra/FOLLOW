@@ -3,8 +3,10 @@ Feedback-based Online Local Learning Of Weights (FOLLOW)
 
 Code for the article:  
 Predicting non-linear dynamics by stable local learning in a recurrent spiking neural network  
-Aditya Gilra, Wulfram Gerstner  
-[arXiv:1702.06463](https://arxiv.org/abs/1702.06463)  
+Aditya Gilra, Wulfram Gerstner, eLife, 6:e28295, 2017.    
+[https://elifesciences.org/articles/28295](https://elifesciences.org/articles/28295)  
+( preprint at [arXiv:1702.06463](https://arxiv.org/abs/1702.06463) ).  
+Source code home: [https://github.com/adityagilra/FOLLOW](https://github.com/adityagilra/FOLLOW)  
   
 ----  
 ##  Installing software:  
