@@ -15,7 +15,8 @@ FOLLOW learning requires the use of heterogeneous spiking LIF neurons with pre-l
 You can install Nengo by:  
 `pip install nengo`  
   
-(For the simulations in the paper, I used Nengo v2.4.0, but the code will also work with v2.5.0, but you'll need to set lower learning rate eta -- see the aside below.)
+(For the simulations in the paper, I used Nengo v2.4.0, but the code will also work with v2.5.0, but you'll need to set lower learning rate eta -- see the aside below.)  
+Note: eta in the code is actually eta\*k of the eLife paper (cf. equations (8) and (10) in the paper), because the error term sent to the Nengo.PES learning rule on the ff and rec connections is without the k. Hence eta=2e-3 in the code corresponds to eta=2e-4 in the eLife paper corrected version 3 (Table 1).  
   
 Currently, the scripts are configured to use Nengo's default CPU backend. This is slow! I **strongly** recommend to use the GPU backend which is about 25 times faster!   
   
